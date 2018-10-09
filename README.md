@@ -36,15 +36,14 @@ By default this is using AlexNet architectures, but in the paper we propose diff
 ```bash
 # To train a model
 $ python3 emotion_recognition.py train
+
 # To use it live
-
-## Windows
+# Windows
 $ call windows_venv/Scripts/activate
+$ python3 emotion_recognition.py poc
 
-## Linux(not exist)
+# Linux(not exist)
 $ source linux_venv/bin/activate
-
-## Common
 $ python3 emotion_recognition.py poc
 ```
 
