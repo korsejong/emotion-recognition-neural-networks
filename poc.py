@@ -5,6 +5,10 @@ from constants import *
 from emotion_recognition import EmotionRecognition
 import numpy as np
 
+import os
+import csv
+import datetime
+
 cascade_classifier = cv2.CascadeClassifier(CASC_PATH)
 
 
@@ -25,7 +29,7 @@ def format_image(image):
     )
     # None is we don't found an image
     if not len(faces) > 0:
-        return None
+        return [None,None]
     max_area_face = faces[0]
     for face in faces:
         if face[2] * face[3] > max_area_face[2] * max_area_face[3]:
@@ -39,10 +43,10 @@ def format_image(image):
                            interpolation=cv2.INTER_CUBIC) / 255.
     except Exception:
         print("[+] Problem during resize")
-        return None
+        return [None,None]
     # cv2.imshow("Lol", image)
     # cv2.waitKey(0)
-    return image
+    return [image,face]
 
 
 # Load Model
@@ -56,24 +60,35 @@ feelings_faces = []
 for index, emotion in enumerate(EMOTIONS):
     feelings_faces.append(cv2.imread('./emojis/' + emotion + '.png', -1))
 
+#open csv
+f = open('./data/result.csv', 'w', encoding='utf-8', newline='')
+wr = csv.writer(f)
+
 while True:
     # Capture frame-by-frame
     ret, frame = video_capture.read()
 
-    # Predict result with network
-    result = network.predict(format_image(frame))
+    # get image and face
+    img, face =  format_image(frame)
 
-    # Draw face in frame
-    # for (x,y,w,h) in faces:
-    #   cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0), 2)
+    # Predict result with network
+    result = network.predict(img)
 
     # Write results in frame
     if result is not None:
+        if face is not None:
+            x,y,w,h = face
+            cv2.rectangle(frame, (x,y), (x+w,y+h), (255,0,0), 2)
+
         for index, emotion in enumerate(EMOTIONS):
             cv2.putText(frame, emotion, (10, index * 20 + 20),
                         cv2.FONT_HERSHEY_PLAIN, 0.5, (0, 255, 0), 1)
             cv2.rectangle(frame, (130, index * 20 + 10), (130 +
                                                           int(result[0][index] * 100), (index + 1) * 20 + 4), (255, 0, 0), -1)
+
+        # write emotion result in csv
+        dt = datetime.datetime.now()
+        wr.writerow(list(e for e in result[0]) + [dt.strftime("%Y-%m-%d %H:%M:%S")])
 
         face_image = feelings_faces[np.argmax(result[0])]
 
@@ -92,3 +107,6 @@ while True:
 # When everything is done, release the capture
 video_capture.release()
 cv2.destroyAllWindows()
+
+# close csv
+f.close()
