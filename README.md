@@ -37,6 +37,14 @@ By default this is using AlexNet architectures, but in the paper we propose diff
 # To train a model
 $ python3 emotion_recognition.py train
 # To use it live
+
+## Windows
+$ call windows_venv/Scripts/activate
+
+## Linux(not exist)
+$ source linux_venv/bin/activate
+
+## Common
 $ python3 emotion_recognition.py poc
 ```
 
